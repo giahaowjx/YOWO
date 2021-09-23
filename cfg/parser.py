@@ -57,7 +57,7 @@ def load_config(args):
         args (argument): arguments includes `shard_id`, `num_shards`,
             `init_method`, `cfg_file`, and `opts`.
     """
-    # Setup cfg.
+    # Setup cfg. get default cfg and check
     cfg = get_cfg()
     # Load config from cfg.
     if args.cfg_file is not None:

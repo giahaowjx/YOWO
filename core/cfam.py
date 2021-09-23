@@ -29,8 +29,9 @@ class CAM_Module(nn.Module):
         m_batchsize, C, height, width = x.size()
         proj_query = x.view(m_batchsize, C, -1)
         proj_key = x.view(m_batchsize, C, -1).permute(0, 2, 1)
+        # energy(B X C X C)
         energy = torch.bmm(proj_query, proj_key)
-        energy_new = torch.max(energy, -1, keepdim=True)[0].expand_as(energy)-energy
+        energy_new = torch.max(energy, -1, keepdim=True)[0].expand_as(energy)-energy # why
         attention = self.softmax(energy_new)
         proj_value = x.view(m_batchsize, C, -1)
 

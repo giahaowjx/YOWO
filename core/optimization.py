@@ -139,8 +139,12 @@ def test_ucf24_jhmdb21(cfg, epoch, model, test_loader):
         data = data.cuda()
         with torch.no_grad():
             output = model(data).data
+            # box (x/w, y/h, w/w, h/h, det_conf, cls_max_conf, cls_max_id, ** tmp_conf, tmp_id)
+            # all_boxes[0] is all box of the first sample of the batch
             all_boxes = get_region_boxes(output, conf_thresh_valid, num_classes, anchors, num_anchors, 0, 1)
+            # all conf > thres anchor
             for i in range(output.size(0)):
+                # get all box of the ith sample
                 boxes = all_boxes[i]
                 boxes = nms(boxes, nms_thresh)
                 if cfg.TRAIN.DATASET == 'ucf24':
@@ -172,6 +176,7 @@ def test_ucf24_jhmdb21(cfg, epoch, model, test_loader):
 
                             f_detect.write(str(int(box[6])+1) + ' ' + str(prob) + ' ' + str(x1) + ' ' + str(y1) + ' ' + str(x2) + ' ' + str(y2) + '\n')
                 truths = target[i].view(-1, 5)
+                # get number of turth in this sample
                 num_gts = truths_length(truths)
         
                 total = total + num_gts
@@ -185,6 +190,7 @@ def test_ucf24_jhmdb21(cfg, epoch, model, test_loader):
                     box_gt = [truths[i][1], truths[i][2], truths[i][3], truths[i][4], 1.0, 1.0, truths[i][0]]
                     best_iou = 0
                     best_j = -1
+                    # choose box with max iou
                     for j in pred_list: # ITERATE THROUGH ONLY CONFIDENT BOXES
                         iou = bbox_iou(box_gt, boxes[j], x1y1x2y2=False)
                         if iou > best_iou:
@@ -199,6 +205,7 @@ def test_ucf24_jhmdb21(cfg, epoch, model, test_loader):
                     if best_iou > iou_thresh and int(boxes[best_j][6]) == box_gt[6]:
                         correct = correct+1
 
+            # How to compute precision and recall
             precision = 1.0*correct/(proposals+eps)
             recall = 1.0*correct/(total+eps)
             fscore = 2.0*precision*recall/(precision+recall+eps)

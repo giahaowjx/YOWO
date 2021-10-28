@@ -33,6 +33,7 @@ def build_targets(pred_boxes, target, anchors, num_anchors, num_classes, nH, nW,
     nAnchors = nA*nH*nW
     nPixels  = nH*nW
     # for each image
+    # 对每张图片，获得图片中预测anchor与GT的最大IOU
     for b in xrange(nB):
         # get all anchor boxes in one image
         # (4 * nAnchors)
@@ -81,6 +82,7 @@ def build_targets(pred_boxes, target, anchors, num_anchors, num_classes, nH, nW,
             gw = target[b][t*5+3] * nW
             gh = target[b][t*5+4] * nH
             gt_box = [0, 0, gw, gh]
+            # 获取GT对应iou最大的anchor
             for n in xrange(nA):
                 # get anchor parameters (2 values)
                 aw = anchors[anchor_step*n]

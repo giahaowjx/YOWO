@@ -46,7 +46,7 @@ class UCF_JHMDB_Dataset(Dataset):
             exposure = 1.5
 
             clip, label = load_data_detection(self.base_path, imgpath,  self.train, self.clip_duration, self.sampling_rate, self.shape, self.dataset, jitter, hue, saturation, exposure)
-
+            print(label)
         else: # For Testing
             frame_idx, clip, label = load_data_detection(self.base_path, imgpath, False, self.clip_duration, self.sampling_rate, self.shape, self.dataset)
             clip = [img.resize(self.shape) for img in clip]
@@ -64,3 +64,15 @@ class UCF_JHMDB_Dataset(Dataset):
             return (clip, label)
         else:
             return (frame_idx, clip, label)
+
+if __name__ == '__main__':
+    from torchvision import transforms
+
+    BASE_PTH = 'F:\Datasets\\ucf24\\ucf24'
+    TRAIN_FILE = 'F:\Datasets\\ucf24\Annotations-UCF\\trainlist.txt'
+    data = UCF_JHMDB_Dataset(BASE_PTH, TRAIN_FILE, dataset='ucf24',
+                      shape=(224, 224),
+                      transform=transforms.Compose([transforms.ToTensor()]),
+                      train=True, clip_duration=16, sampling_rate=1)
+
+    result = data.__getitem__(10000)

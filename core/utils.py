@@ -260,6 +260,7 @@ def convert2cpu_long(gpu_matrix):
 
 def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, only_objectness=1, validation=False):
     anchor_step = len(anchors)//num_anchors
+    # batch_size
     if output.dim() == 3:
         output = output.unsqueeze(0)
     batch = output.size(0)
@@ -273,6 +274,7 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
 
     grid_x = torch.linspace(0, w-1, w).repeat(h,1).repeat(batch*num_anchors, 1, 1).view(batch*num_anchors*h*w).cuda()
     grid_y = torch.linspace(0, h-1, h).repeat(w,1).t().repeat(batch*num_anchors, 1, 1).view(batch*num_anchors*h*w).cuda()
+    # offset of central position (output[0] and output[1])
     xs = torch.sigmoid(output[0]) + grid_x
     ys = torch.sigmoid(output[1]) + grid_y
 
@@ -280,9 +282,11 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
     anchor_h = torch.Tensor(anchors).view(num_anchors, anchor_step).index_select(1, torch.LongTensor([1]))
     anchor_w = anchor_w.repeat(batch, 1).repeat(1, 1, h*w).view(batch*num_anchors*h*w).cuda()
     anchor_h = anchor_h.repeat(batch, 1).repeat(1, 1, h*w).view(batch*num_anchors*h*w).cuda()
+    # scaling of width and height of anchor (output[2] and output[3])
     ws = torch.exp(output[2]) * anchor_w
     hs = torch.exp(output[3]) * anchor_h
 
+    # confidence of detection (output[4])
     det_confs = torch.sigmoid(output[4])
 
     cls_confs = torch.nn.Softmax()(Variable(output[5:5+num_classes].transpose(0,1))).data
@@ -313,6 +317,7 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
                     if only_objectness:
                         conf =  det_confs[ind]
                     else:
+                        # final detection confidence = det * cls condfidence
                         conf = det_confs[ind] * cls_max_confs[ind]
     
                     if conf > conf_thresh:
@@ -323,6 +328,7 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
                         cls_max_conf = cls_max_confs[ind]
                         cls_max_id = cls_max_ids[ind]
                         box = [bcx/w, bcy/h, bw/w, bh/h, det_conf, cls_max_conf, cls_max_id]
+                        # add cls conf and id
                         if (not only_objectness) and validation:
                             for c in range(num_classes):
                                 tmp_conf = cls_confs[ind][c]

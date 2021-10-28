@@ -150,7 +150,7 @@ def load_data_detection(base_path, imgpath, train, train_dur, sampling_rate, sha
         labpath = os.path.join(base_path, 'labels', im_split[0], im_split[1] ,'{:05d}.txt'.format(im_ind))
         max_num = len(os.listdir(img_folder))
     elif dataset_use == 'jhmdb21':
-        labpath = '_'.join(base_path, 'labels', im_split[0], im_split[1] ,'{:05d}.txt'.format(im_ind))
+        labpath = os.path.join(base_path, 'labels', '_'.join([im_split[0], im_split[1] ,'{:05d}.txt'.format(im_ind)]))
         max_num = len(os.listdir(img_folder)) - 1
 
     clip = []
